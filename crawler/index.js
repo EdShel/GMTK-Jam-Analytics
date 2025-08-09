@@ -147,8 +147,8 @@ function scrapeGame(element) {
     return {
       category: cells[0].textContent,
       place: Number(cells[1].textContent.substring(1)),
-      score: cells[2].textContent,
-      rawScore: cells[3].textContent,
+      score: Number(cells[2].textContent),
+      rawScore: Number(cells[3].textContent),
     };
   });
 
