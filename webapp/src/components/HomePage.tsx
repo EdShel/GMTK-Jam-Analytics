@@ -260,8 +260,11 @@ const HomePage: React.FC<Props> = ({ data }) => {
       const predicateForThisFilter = schema
         .find((s) => s.propertyName === filter.propertyName)!
         .createPredicate(filter);
-      predicate = predicate
-        ? (game: Game) => predicate!(game) && predicateForThisFilter(game)
+      const oldPredicate: unknown = predicate;
+      predicate = oldPredicate
+        ? (game: Game) =>
+            (oldPredicate as typeof predicate)!(game) &&
+            predicateForThisFilter(game)
         : predicateForThisFilter;
     }
 

@@ -8,7 +8,7 @@ interface Props {
 }
 
 const PagedList: React.FC<Props> = ({ games }) => {
-  const [page] = useQuery("page");
+  const [page, setPage] = useQuery("page");
   const itemsPerPage = 20;
   const currentPage = (page && Number(page)) || 1;
   const totalPages = Math.ceil(games.length / itemsPerPage);
@@ -31,17 +31,17 @@ const PagedList: React.FC<Props> = ({ games }) => {
                 ...
               </span>
             ) : (
-              <a
+              <button
                 key={index}
-                href={page === 1 ? "." : `?page=${page}`}
+                onClick={() => setPage(String(page))}
                 className={`rounded px-3 py-1 ${
                   page === currentPage
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                } cursor-pointer`}
               >
                 {page}
-              </a>
+              </button>
             )
           )}
         </div>
