@@ -11,6 +11,8 @@ export type Game = {
     score: number;
     rawScore: number;
   }[];
+  platforms: string[] | undefined;
   genres: string[] | undefined;
+  madeWith: string[] | undefined;
   tags: string[] | undefined;
 };

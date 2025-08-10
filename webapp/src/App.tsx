@@ -10,7 +10,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/output.json");
+        const response = await fetch("/data.json");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -26,14 +26,14 @@ function App() {
   }, []);
 
   return (
-    <div>
+    <main className="font-display">
       <h1 className="text-4xl font-bold mb-4 text-center mt-8">
         GMTK Game Jam 2025 Stats
       </h1>
       {error && <p className="text-red-500">{error}</p>}
       {data && <Games data={data} />}
       {!data && !error && <p className="text-gray-500">Loading...</p>}
-    </div>
+    </main>
   );
 }
 

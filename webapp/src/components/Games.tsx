@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import type { Game } from "../types/Game";
 import { type FilterData, type FiltersSchema } from "../filtering/FilterData";
-import GameCard from "./GameCard";
 import FilterSelector from "./FilterSelector";
+import PagedList from "./PagedList";
 
 interface Props {
   data: Game[];
@@ -285,9 +285,7 @@ const Games: React.FC<Props> = ({ data }) => {
         />
       ))}
 
-      {filteredData.map((game) => (
-        <GameCard key={game.gameUrl} game={game} />
-      ))}
+      <PagedList games={filteredData} />
     </div>
   );
 };

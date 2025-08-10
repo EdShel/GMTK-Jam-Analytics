@@ -1,9 +1,11 @@
 import fetch from "node-fetch";
 import { JSDOM } from "jsdom";
 import fs from "node:fs";
+import path from "node:path";
 
 const WAIT_ON_429_MS = 500;
 const WAIT_FOR_NEXT_MS = 300;
+const TEMP_DIR = path.resolve("./temp");
 
 function createThrottler() {
   let waitPromise = null;
@@ -164,7 +166,15 @@ function scrapeGame(element) {
 }
 
 async function parseGamePage(url) {
-  const html = await getHtml(url);
+  let html;
+  try {
+    html = await getHtml(url);
+  } catch (error) {
+    if (error.message.includes("Response failed: Not Found")) {
+      console.warn(`Game page not found: ${url}`);
+      return {};
+    }
+  }
   const doc = new JSDOM(html).window.document;
   const moreInfoRows = Array.from(
     doc.querySelectorAll(".info_panel_wrapper tr")
@@ -174,7 +184,10 @@ async function parseGamePage(url) {
       const cells = Array.from(r.querySelectorAll("td"));
       const label = cells[0].textContent;
       if (label === "Platforms") {
-        return ["platforms", cells[1].textContent];
+        return [
+          "platforms",
+          Array.from(cells[1].querySelectorAll("a")).map((a) => a.textContent),
+        ];
       }
       if (label === "Genre") {
         return [
@@ -197,35 +210,47 @@ async function parseGamePage(url) {
   return Object.fromEntries(data);
 }
 
-async function parseGameJam({ from, to }) {
-  const result = [];
+async function parseGameJamAndRegularPage(pageNumber) {
+  const data = [];
 
-  let pageNumber = from;
-  let totalPages = to;
-  do {
-    console.log(`Parsing page: ${pageNumber}/${totalPages}`);
-    const listResult = await parseResultsPage(pageNumber);
-    totalPages = Math.min(to, listResult.totalPages);
+  const listResult = await parseResultsPage(pageNumber);
+  const gameData = await Promise.all(
+    listResult.games.map((game) => parseGamePage(game.gameUrl))
+  );
+  for (let i = 0; i < gameData.length; i++) {
+    data.push({
+      ...listResult.games[i],
+      ...gameData[i],
+    });
+  }
 
-    const gameData = await Promise.all(
-      listResult.games.map((game) => parseGamePage(game.gameUrl))
-    );
-    for (let i = 0; i < gameData.length; i++) {
-      result.push({
-        ...listResult.games[i],
-        ...gameData[i],
-      });
-    }
-
-    pageNumber++;
-  } while (pageNumber < totalPages);
-
-  return result;
+  return {
+    data,
+    totalPages: listResult.totalPages,
+  };
 }
 
 async function main() {
-  const jamData = await parseGameJam({ from: 1, to: 20 });
-  fs.writeFileSync("./output.json", JSON.stringify(jamData));
+  console.log("Starting to parse game jam data");
+  // if (fs.existsSync(TEMP_DIR)) {
+  //   fs.rmdirSync(TEMP_DIR, { recursive: true, force: true });
+  // }
+  // fs.mkdirSync(TEMP_DIR, { recursive: true });
+
+  let currentPage = 204;
+  let totalPages = 1;
+  do {
+    console.log(
+      `Fetching page ${currentPage}/${totalPages} of game jam results`
+    );
+    const jamData = await parseGameJamAndRegularPage(currentPage);
+
+    const tempFile = path.join(TEMP_DIR, `p${currentPage}.json`);
+    fs.writeFileSync(tempFile, JSON.stringify(jamData.data));
+    currentPage++;
+    totalPages = jamData.totalPages;
+  } while (currentPage <= totalPages);
+
   console.log("Done!");
 }
 main();
