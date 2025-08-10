@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import type { Game } from "./types/Game";
 import Games from "./components/Games";
+import { BASE_URL } from "./constants";
 
 function App() {
   const [data, setData] = useState<Game[] | null>(null);
@@ -10,7 +11,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/data.json");
+        const response = await fetch(`${BASE_URL}data.json`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
