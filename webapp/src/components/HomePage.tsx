@@ -1,17 +1,22 @@
 import React, { useMemo } from "react";
 import type { Game } from "../types/Game";
 import { type FilterData, type FiltersSchema } from "../filtering/FilterData";
-import FilterSelector from "./FilterSelector";
 import PagedList from "./PagedList";
+import FiltersBar from "./FiltersBar";
+import { useQuery } from "crossroad";
+import parseQueryFilters from "../filtering/parseQueryFilters";
 
 interface Props {
   data: Game[];
 }
 
 const HomePage: React.FC<Props> = ({ data }) => {
-  const [filters, setFilters] = React.useState<FilterData[]>([]);
-
   const rankingCategories = data[0].ranks.map((r) => r.category);
+  const [filtersSearchParams] = useQuery("filters");
+  const filters = useMemo(
+    () => parseQueryFilters(filtersSearchParams),
+    [filtersSearchParams]
+  );
 
   const allGenres = useMemo(() => {
     const genresSet = new Set<string>();
@@ -269,41 +274,7 @@ const HomePage: React.FC<Props> = ({ data }) => {
 
   return (
     <div>
-      <div className="max-w-6xl mx-auto flex flex-col gap-y-3 items-start">
-        {filters.map((f, i) => (
-          <div key={i} className="flex items-center gap-x-2">
-            <button
-              className="text-red-600 border-red-600 bg-white border-2 rounded-md px-4 py-2 hover:border-red-900 hover:text-red-900 cursor-pointer"
-              onClick={() =>
-                setFilters((old) => old.filter((_, fi) => fi !== i))
-              }
-            >
-              Remove
-            </button>
-            <FilterSelector
-              data={f}
-              onDataChange={(newData) =>
-                setFilters((old) =>
-                  old.map((f, fi) => (fi === i ? newData : f))
-                )
-              }
-              schema={schema}
-            />
-          </div>
-        ))}
-
-        <button
-          className="text-gray-600 border-gray-600 bg-white border-2 rounded-md px-4 py-2 hover:border-gray-900 hover:text-gray-900 cursor-pointer"
-          onClick={() =>
-            setFilters((old) => [
-              ...old,
-              { propertyName: null, operator: null, value: null },
-            ])
-          }
-        >
-          Add filter
-        </button>
-      </div>
+      <FiltersBar schema={schema} />
 
       <div className="max-w-4xl mx-auto mt-8">
         <PagedList games={filteredData} />
