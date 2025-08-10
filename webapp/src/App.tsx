@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 import type { Game } from "./types/Game";
-import Games from "./components/Games";
 import { BASE_URL } from "./constants";
+import HomePage from "./components/HomePage";
+import Spinner from "./components/Spinner";
+import Router from "crossroad";
 
 function App() {
   const [data, setData] = useState<Game[] | null>(null);
@@ -27,14 +28,25 @@ function App() {
   }, []);
 
   return (
-    <main className="font-display">
-      <h1 className="text-4xl font-bold mb-4 text-center mt-8">
-        GMTK Game Jam 2025 Stats
-      </h1>
-      {error && <p className="text-red-500">{error}</p>}
-      {data && <Games data={data} />}
-      {!data && !error && <p className="text-gray-500">Loading...</p>}
-    </main>
+    <Router scrollUp>
+      <main className="font-display mb-32">
+        <h1 className="text-4xl font-bold mb-4 text-center mt-8">
+          GMTK Game Jam 2025 Stats
+        </h1>
+
+        {error && (
+          <p className="text-red-500 text-3xl text-center font-bold">{error}</p>
+        )}
+
+        {!data && !error && (
+          <div className="flex justify-center mt-8 mb-4">
+            <Spinner />
+          </div>
+        )}
+
+        {data && <HomePage data={data} />}
+      </main>
+    </Router>
   );
 }
 

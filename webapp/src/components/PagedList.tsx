@@ -1,14 +1,17 @@
 import React from "react";
 import type { Game } from "../types/Game";
 import GameCard from "./GameCard";
+import { useQuery } from "crossroad";
 
 interface Props {
   games: Game[];
 }
 
 const PagedList: React.FC<Props> = ({ games }) => {
-  const [currentPage, setCurrentPage] = React.useState(1);
+  const [page] = useQuery("page");
   const itemsPerPage = 20;
+  const currentPage = (page && Number(page)) || 1;
+  const totalPages = Math.ceil(games.length / itemsPerPage);
 
   return (
     <div>
@@ -20,28 +23,29 @@ const PagedList: React.FC<Props> = ({ games }) => {
           ))}
       </div>
 
-      <div className="flex justify-center mt-12 gap-2">
-        {calculatePagination(currentPage, games.length, itemsPerPage).map(
-          (page, index) =>
+      {games.length > itemsPerPage && (
+        <div className="flex justify-center mt-12 gap-2">
+          {calculatePagination(currentPage, totalPages).map((page, index) =>
             page === "..." ? (
               <span key={index} className="mx-2">
                 ...
               </span>
             ) : (
-              <button
+              <a
                 key={index}
+                href={page === 1 ? "." : `?page=${page}`}
                 className={`rounded px-3 py-1 ${
                   page === currentPage
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
-                onClick={() => setCurrentPage(page)}
               >
                 {page}
-              </button>
+              </a>
             )
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -50,10 +54,8 @@ export default PagedList;
 
 function calculatePagination(
   currentPage: number,
-  totalItems: number,
-  itemsPerPage: number
+  totalPages: number
 ): (number | "...")[] {
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
   const maxVisiblePages = 5;
   if (totalPages <= maxVisiblePages) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);

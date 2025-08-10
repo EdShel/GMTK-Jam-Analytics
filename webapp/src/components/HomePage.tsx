@@ -8,15 +8,8 @@ interface Props {
   data: Game[];
 }
 
-const Games: React.FC<Props> = ({ data }) => {
-  const [filters, setFilters] = React.useState<FilterData[]>([
-    {
-      propertyName: null,
-      operator: null,
-      value: null,
-      propertyName2: null,
-    },
-  ]);
+const HomePage: React.FC<Props> = ({ data }) => {
+  const [filters, setFilters] = React.useState<FilterData[]>([]);
 
   const rankingCategories = data[0].ranks.map((r) => r.category);
 
@@ -43,24 +36,6 @@ const Games: React.FC<Props> = ({ data }) => {
   const schema: FiltersSchema[] = useMemo(
     () => [
       {
-        propertyName: "coverUrl",
-        label: "Cover",
-        type: "dropdown",
-        values: ["image", "gif", "missing"],
-        createPredicate: (data: FilterData): ((game: Game) => boolean) => {
-          if (data.value === "missing") {
-            return (g) => !g.coverUrl;
-          }
-          if (data.value === "image") {
-            return (g) => !!g.coverUrl && !g.coverUrl.endsWith(".gif");
-          }
-          if (data.value === "gif") {
-            return (g) => !!g.coverUrl && g.coverUrl.endsWith(".gif");
-          }
-          return () => true;
-        },
-      },
-      {
         propertyName: "name",
         label: "Name",
         type: "string",
@@ -78,61 +53,6 @@ const Games: React.FC<Props> = ({ data }) => {
               return (g) => g.name.toLowerCase().startsWith(value);
             case "ends with":
               return (g) => g.name.toLowerCase().endsWith(value);
-            default:
-              return () => true;
-          }
-        },
-      },
-      {
-        propertyName: "authorsCount",
-        label: "Authors count",
-        type: "number",
-        inputProps: { min: 0, step: 1 },
-        createPredicate: (data: FilterData): ((game: Game) => boolean) => {
-          if (!Number.isFinite(Number(data.value)) || !data.operator) {
-            return () => true;
-          }
-          const value = Number(data.value);
-          switch (data.operator) {
-            case "==":
-              return (g) => g.authors.length === value;
-            case "!=":
-              return (g) => g.authors.length !== value;
-            case "<":
-              return (g) => g.authors.length < value;
-            case "<=":
-              return (g) => g.authors.length <= value;
-            case ">":
-              return (g) => g.authors.length > value;
-            case ">=":
-              return (g) => g.authors.length >= value;
-            default:
-              return () => true;
-          }
-        },
-      },
-      {
-        propertyName: "votesCount",
-        label: "Votes count",
-        type: "number",
-        createPredicate: (data: FilterData): ((game: Game) => boolean) => {
-          if (!Number.isFinite(Number(data.value)) || !data.operator) {
-            return () => true;
-          }
-          const value = Number(data.value);
-          switch (data.operator) {
-            case "==":
-              return (g) => g.ratingsCount === value;
-            case "!=":
-              return (g) => g.ratingsCount !== value;
-            case "<":
-              return (g) => g.ratingsCount < value;
-            case "<=":
-              return (g) => g.ratingsCount <= value;
-            case ">":
-              return (g) => g.ratingsCount > value;
-            case ">=":
-              return (g) => g.ratingsCount >= value;
             default:
               return () => true;
           }
@@ -204,6 +124,80 @@ const Games: React.FC<Props> = ({ data }) => {
         },
       },
       {
+        propertyName: "coverUrl",
+        label: "Cover",
+        type: "dropdown",
+        values: ["image", "gif", "missing"],
+        createPredicate: (data: FilterData): ((game: Game) => boolean) => {
+          if (data.value === "missing") {
+            return (g) => !g.coverUrl;
+          }
+          if (data.value === "image") {
+            return (g) => !!g.coverUrl && !g.coverUrl.endsWith(".gif");
+          }
+          if (data.value === "gif") {
+            return (g) => !!g.coverUrl && g.coverUrl.endsWith(".gif");
+          }
+          return () => true;
+        },
+      },
+      {
+        propertyName: "authorsCount",
+        label: "Authors count",
+        type: "number",
+        inputProps: { min: 0, step: 1 },
+        createPredicate: (data: FilterData): ((game: Game) => boolean) => {
+          if (!Number.isFinite(Number(data.value)) || !data.operator) {
+            return () => true;
+          }
+          const value = Number(data.value);
+          switch (data.operator) {
+            case "==":
+              return (g) => g.authors.length === value;
+            case "!=":
+              return (g) => g.authors.length !== value;
+            case "<":
+              return (g) => g.authors.length < value;
+            case "<=":
+              return (g) => g.authors.length <= value;
+            case ">":
+              return (g) => g.authors.length > value;
+            case ">=":
+              return (g) => g.authors.length >= value;
+            default:
+              return () => true;
+          }
+        },
+      },
+      {
+        propertyName: "votesCount",
+        label: "Votes count",
+        type: "number",
+        createPredicate: (data: FilterData): ((game: Game) => boolean) => {
+          if (!Number.isFinite(Number(data.value)) || !data.operator) {
+            return () => true;
+          }
+          const value = Number(data.value);
+          switch (data.operator) {
+            case "==":
+              return (g) => g.ratingsCount === value;
+            case "!=":
+              return (g) => g.ratingsCount !== value;
+            case "<":
+              return (g) => g.ratingsCount < value;
+            case "<=":
+              return (g) => g.ratingsCount <= value;
+            case ">":
+              return (g) => g.ratingsCount > value;
+            case ">=":
+              return (g) => g.ratingsCount >= value;
+            default:
+              return () => true;
+          }
+        },
+      },
+
+      {
         propertyName: "genres",
         label: "Genres",
         type: "dropdown",
@@ -272,22 +266,50 @@ const Games: React.FC<Props> = ({ data }) => {
 
     return data.filter(predicate);
   }, [data, filters, schema]);
-  return (
-    <div className="max-w-4xl mx-auto">
-      {filters.map((f, i) => (
-        <FilterSelector
-          key={i}
-          data={f}
-          onDataChange={(newData) =>
-            setFilters((old) => old.map((f, fi) => (fi === i ? newData : f)))
-          }
-          schema={schema}
-        />
-      ))}
 
-      <PagedList games={filteredData} />
+  return (
+    <div>
+      <div className="max-w-6xl mx-auto flex flex-col gap-y-3 items-start">
+        {filters.map((f, i) => (
+          <div key={i} className="flex items-center gap-x-2">
+            <button
+              className="text-red-600 border-red-600 bg-white border-2 rounded-md px-4 py-2 hover:border-red-900 hover:text-red-900 cursor-pointer"
+              onClick={() =>
+                setFilters((old) => old.filter((_, fi) => fi !== i))
+              }
+            >
+              Remove
+            </button>
+            <FilterSelector
+              data={f}
+              onDataChange={(newData) =>
+                setFilters((old) =>
+                  old.map((f, fi) => (fi === i ? newData : f))
+                )
+              }
+              schema={schema}
+            />
+          </div>
+        ))}
+
+        <button
+          className="text-gray-600 border-gray-600 bg-white border-2 rounded-md px-4 py-2 hover:border-gray-900 hover:text-gray-900 cursor-pointer"
+          onClick={() =>
+            setFilters((old) => [
+              ...old,
+              { propertyName: null, operator: null, value: null },
+            ])
+          }
+        >
+          Add filter
+        </button>
+      </div>
+
+      <div className="max-w-4xl mx-auto mt-8">
+        <PagedList games={filteredData} />
+      </div>
     </div>
   );
 };
 
-export default Games;
+export default HomePage;

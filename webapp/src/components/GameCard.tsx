@@ -46,12 +46,12 @@ const GameCard: React.FC<Props> = ({
           <span className="text-sm font-medium text-gray-600">
             by{" "}
             {authors.map((a, i) => (
-              <>
+              <React.Fragment key={i}>
                 {i > 0 && ", "}
-                <a key={i} href={a.url} className="underline">
+                <a href={a.url} className="underline">
                   {a.name}
                 </a>
-              </>
+              </React.Fragment>
             ))}
           </span>
         </h2>
